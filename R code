@@ -1,0 +1,211 @@
+library(tidyverse)
+# Multiple Linear Regression Example 
+#import data
+f1path <- paste0(getwd(), "/000001.SS-6 China Stock prize.csv")
+Data1 <- read.csv(f1path)
+f2path <- paste0(getwd(), "/^IXIC-2 USA Stock prize Data.csv")
+Data2 <- read.csv(f2path)
+f3path <- paste0(getwd(), "/^N225-2  Japan Stocks Data Daily .csv")
+Data3 <- read.csv(f3path)
+head(Data1)
+colnames(Data1)
+colnames(Data2)
+colnames(Data3)
+Data1nData2<-merge(Data1,Data2, by = "Date")
+dim(Data1nData2)
+head(Data1nData2)
+Data1nData2nData3<-merge(Data1nData2,Data3, by = "Date")
+dim(Data1nData2nData3)
+head(Data1nData2nData3)
+tail(Data1nData2nData3)
+all<- Data1nData2nData3
+col<-c(1,2,8,14)
+all_sub<-all[,col]
+head(all_sub)
+
+f4path <- paste0(getwd(), "/China-Covid19data.csv")
+Data4 <- read.csv(f4path)
+f5path <- paste0(getwd(), "/USA-Covid19Data.csv")
+Data5 <- read.csv(f5path)
+f6path <- paste0(getwd(), "/Japan_Covid19Data.csv")
+Data6 <- read.csv(f6path)
+head(Data4)
+colnames(Data4)
+colnames(Data5)
+colnames(Data6)
+Data4nData5<-merge(Data4,Data5, by = "Date")
+dim(Data4nData5)
+head(Data4nData5)
+Data4nData5nData6<-merge(Data4nData5,Data6, by = "Date")
+dim(Data4nData5nData6)
+head(Data4nData5nData6)
+all2<- Data4nData5nData6
+all2_sub <- all2[7:326,]
+tail(all2_sub)
+col_covidcases<-c(1,6,14,22)
+col_coviddeath<-c(1,7,15,23)
+covidcases<-all2_sub[,col_covidcases]
+coviddeath<-all2_sub[,col_coviddeath]
+head(covidcases)
+head(coviddeath)
+
+
+f7path <- paste0(getwd(), "/Math111AUnemploymentRate.csv")
+Data7 <- read.csv(f7path)
+dim(Data7)
+head(Data7)
+UnemployRate <- Data7
+
+ALL<-merge(all2, all, by = "Date")
+dim(ALL)
+head(ALL)
+colnames(ALL)
+col3<-c(1,6,14,22,26,32,38)
+all3_sub<-ALL[,col3]
+head(all3_sub)
+
+AALL<-merge(all3_sub, Data7, by = "Date")
+dim(AALL)
+head(AALL)
+colnames(AALL)=c("date","c1","c2","c3","o1","o2","o3","u1","u2","u3")
+head(AALL)
+
+# scatterplot
+library(ggplot2)
+sp1<-ggplot(AALL) +
+  aes(x = log(c1+0.1),y = log(o1+0.1)) +
+  geom_point(colour = "#0c4c8a") +
+  theme_minimal() + geom_smooth(method = "lm", se = FALSE) +
+  labs(title="Plot of Covid-19 Case in CHN vs Stock Price in CHN",
+       x = "Covid-19 Case in CHN",y ="Stock Price in CHN") +
+  annotate("text", x=8, y=8, label= "R=-0.1813108 , p=0.0114")# Add correlation coefficient & P
+sp1
+cor.test(AALL$o1, AALL$c1) #-0.1813108  almost 0
+#Since the correlation is equal to -0.05981 which is almost 0 so we assume it have less affects on USA stock price 
+
+sp2<-ggplot(AALL) +
+  aes(x = log(c2+0.1),y = log(o1+0.1)) +
+  geom_point(colour = "#0c4c8a") +
+  theme_minimal() + geom_smooth(method = "lm", se = FALSE) +
+  labs(title="Plot of Stock Price in CHN vs Covid-19 Case in USA",
+       x = "Covid-19 Case in USA",y ="Stock Price in USA") +
+  annotate("text", x=3, y=8.1, label= "R=0.6162747 , p=< 2.2e-16")# Add correlation coefficient
+sp2
+cor.test(AALL$c2, AALL$o1) #0.6162747 
+
+sp3<-ggplot(AALL) +
+  aes(x = log(c3+0.1),y = log(o1+0.1)) +
+  geom_point(colour = "#0c4c8a") +
+  theme_minimal() + geom_smooth(method = "lm", se = FALSE) +
+  labs(title="Plot of Stock Price in CHN vs Covid-19 Case in JPN",
+       x = "Covid-19 Case in JPN",y ="Stock Price in CHN") +
+  annotate("text", x=0, y=8.1, label= "R=0.6166336 , p=< 2.2e-16") # Add correlation coefficient
+sp3
+cor.test(AALL$c3, AALL$o1) #0.6166336 
+
+sp4<-ggplot(AALL) +
+  aes(x = log(u1+0.1),y = log(o1+0.1)) +
+  geom_point(colour = "#0c4c8a") +
+  theme_minimal() + geom_smooth(method = "lm", se = FALSE) +
+  labs(title="Plot of Stock Price in CHN vs Unemployment Rate in CHN",
+       x = "Unemployment Rate in CHN",y ="Stock Price in CHN") +
+  annotate("text", x=1.73, y=8.12, label= "R=-0.4913627 , p=3.473e-13") # Add correlation coefficient
+sp4
+cor.test(AALL$u1, AALL$o1) #-0.4913627 
+
+sp5<-ggplot(AALL) +
+  aes(x = log(u2+0.1),y = log(o1+0.1)) +
+  geom_point(colour = "#0c4c8a") +
+  theme_minimal() + geom_smooth(method = "lm", se = FALSE) +
+  labs(title="Plot of Stock Price in CHN vs Unemployment Rate in JPN",
+       x = "Unemployment Rate in USA",y ="Stock Price in CHN") +
+  annotate("text", x=1.5, y=8.1, label= "R=-0.186278 , p=0.009306") # Add correlation coefficient
+sp5
+cor.test(AALL$u2, AALL$o1) #-0.186278 
+
+sp6<-ggplot(AALL) +
+  aes(x = log(u3+0.1),y = log(o1+0.1)) +
+  geom_point(colour = "#0c4c8a") +
+  theme_minimal() + geom_smooth(method = "lm", se = FALSE) +
+  labs(title="Plot of Stock Price in CHN vs Unemployment Rate in JPN",
+       x = "Unemployment Rate in JPN",y ="Stock Price in CHN") +
+  annotate("text", x=1, y=8.1, label= "R=0.6864351 , p=< 2.2e-16") # Add correlation coefficient
+sp6
+cor.test(AALL$u3, AALL$o1) #0.6864351 
+
+sp7<-ggplot(AALL) +
+  aes(x = log(o1+0.1),y = log(o2+0.1)) +
+  geom_point(colour = "#0c4c8a") +
+  theme_minimal() + geom_smooth(method = "lm", se = FALSE) +
+  labs(title="Plot of Stock Price in USA vs Stock Price in CHN",
+       x = "Stock Price in CHN",y ="Stock Price in USA") +
+  annotate("text", x=8, y=9.35, label= "R=0.8792579, p=< 2.2e-16")
+sp7
+cor.test(AALL$o1, AALL$o2) #0.8792579
+
+sp8<-ggplot(AALL) +
+  aes(x = log(o3+0.1),y = log(o1+0.1)) +
+  geom_point(colour = "#0c4c8a") +
+  theme_minimal() + geom_smooth(method = "lm", se = FALSE) +
+  labs(title="Plot of Stock Price in CHN vs Stock Price in JPN",
+       x = "Stock Price in JPN",y ="Stock Price in CHN") +
+  annotate("text", x=9.8, y=8.1, label= "R=0.7005338, p=< 2.2e-16")
+sp8
+cor.test(AALL$o3, AALL$o1) #0.7005338 
+
+library(tidyverse)
+##Spilt the dataset into train set and test set
+set.seed(1)
+row.number <- sample(1:nrow(AALL), 0.8*nrow(AALL))
+train = AALL[row.number,]
+test = AALL[-row.number,]
+dim(train)
+dim(test)
+head(train)
+head(test)
+
+# Multivariate Linear Regression 
+fit2 <- lm(o1 ~ c1 + c2 + c3 + u1 + u2 + u3 + o2 + o3, data=train)
+fit2
+
+#Show results
+summary(fit2)
+
+par(mfrow=c(2,2))
+plot(fit2)
+
+
+#Predicted Result for linear 
+pred2 <- predict(fit2, newdata = test)
+pred2
+modelEval2<-cbind(test$o1,pred2)
+colnames(modelEval2) <- c('Actual', 'Predicted')
+modelEval2
+rmse <- sqrt(sum((pred2 - test$o1)^2)/length(test$o1))
+rmse #96.55912
+c(RMSE = rmse, R2=summary(fit2)$r.squared)
+#RMSE          R2 
+#96.5591184  0.8634111 
+
+
+#Since the the differrent between the the first row of o2 and the second row of o2(Stock Price in USA)
+# from 1 to 155 so and we get the mean of the different=1.339084
+Diff_of_CHN_SP<-c()
+for (i in 2:155){
+  Diff_of_CHN_SP[i-1]<-AALL[i,5]-AALL[i-1,5]
+}
+Diff_of_CHN_SP
+mean(Diff_of_CHN_SP) #1.339084
+
+#The RMSE that we get is 96.55912 which is alot larger than the number 1.339084.
+#Therefore, this might not be a good model fit.
+#Hence, we will start improve the model using the backward stepwise regression.
+
+#Performing a stepwise regression
+step(fit2, direction = "forward")
+#It doesn't give me any additional information
+
+library(lmtest)
+fit2 <- lm(o1 ~ c1 + c2 + c3 + u1 + u2 + u3 + o2 + o3, data=train)
+bptest(fit2)
+
